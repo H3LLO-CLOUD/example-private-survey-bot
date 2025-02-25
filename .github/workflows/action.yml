@@ -24,6 +24,7 @@ jobs:
         run: |
           echo "GHCR_IMAGE_APP=${{ env.GHCR_REGISTRY_HOST }}/${GITHUB_REPOSITORY,,}-app:${GITHUB_REF##*/}" >> ${GITHUB_ENV}
           echo "GHCR_IMAGE_BACKEND=${{ env.GHCR_REGISTRY_HOST }}/${GITHUB_REPOSITORY,,}-backend:${GITHUB_REF##*/}" >> ${GITHUB_ENV}
+          echo "GHCR_IMAGE_DATABASE=${{ env.GHCR_REGISTRY_HOST }}/${GITHUB_REPOSITORY,,}-database:${GITHUB_REF##*/}" >> ${GITHUB_ENV}
 
       -
         name: Set up QEMU
@@ -53,11 +54,20 @@ jobs:
           # ${login}/${repository-name}-app
           tags: |
             ${{ env.GHCR_IMAGE_APP }}
-          # Connect images to repo
-          labels: |
-            org.opencontainers.image.source=https://github.com/${GHCR_REGISTRY_USERNAME}/${GITHUB_REPOSITORY}
-            org.opencontainers.image.description=Application
-            org.opencontainers.image.licenses=UNLICENSED
+
+      -
+        # ${login}/${repository-name}-app
+        name: Build and push database
+        uses: docker/build-push-action@v4
+        with:
+          context: ./containers/database
+          platforms: linux/amd64
+          #          platforms: linux/amd64,linux/arm64
+          push: true
+          # ${login}/${repository-name}-app
+          tags: |
+            ${{ env.GHCR_IMAGE_DATABASE }}
+
 
       -
         name: Build and push backend
@@ -70,9 +80,4 @@ jobs:
           # ${login}/${repository-name}-backend
           tags: |
             ${{ env.GHCR_IMAGE_BACKEND }}
-          # Connect images to repo
-          labels: |
-            org.opencontainers.image.source=https://github.com/${GHCR_REGISTRY_USERNAME}/${GITHUB_REPOSITORY}
-            org.opencontainers.image.description=Application
-            org.opencontainers.image.licenses=UNLICENSED
             

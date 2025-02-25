@@ -1,7 +1,8 @@
 services:
   app:
+    image: ghcr.io/rieset/bot-app:main
     build:
-      context: ./services/app
+      context: ./containers/app
       dockerfile: Dockerfile
       target: production
     environment:
@@ -10,8 +11,9 @@ services:
       - "80:3000"
 
   backend:
+    image: ghcr.io/rieset/bot-backend:main
     build:
-      context: ./services/backend
+      context: ./containers/backend
       dockerfile: Dockerfile
       target: production
     environment:
@@ -22,12 +24,23 @@ services:
       - "8080:8080"
 
   postgres:
-    image: postgres:17.2
+    build:
+      context: ./containers/database
+      dockerfile: Dockerfile
     environment:
       POSTGRES_DB: "survey_bot_db"
       POSTGRES_USER: "survey_bot_user"
       POSTGRES_PASSWORD: "L2eVC5aTUB1tzni3"
-    volumes:
-      - .:/docker-entrypoint-initdb.d
+      PGDATA: /var/lib/postgresql/data/data
     ports:
       - "5432:5432"
+    # Для базы данных устанавливаем хранилище
+    # на уровень ниже для обеспечения чистой директории
+    # при инициализации
+    volumes:
+      - .:/var/lib/postgresql/data
+
+x-registry:
+  "ghcr.io":
+    username: <login>
+    password: <token>
