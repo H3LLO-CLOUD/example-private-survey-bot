@@ -1,0 +1,33 @@
+services:
+  app:
+    build:
+      context: ./services/app
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8080
+    ports:
+      - "80:3000"
+
+  backend:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      POSTGRES_URL: "jdbc:postgresql://postgres:5432/survey_bot_db"
+      POSTGRES_USER: "survey_bot_user"
+      POSTGRES_PASSWORD: "L2eVC5aTUB1tzni3"
+    ports:
+      - "8080:8080"
+
+  postgres:
+    image: postgres:17.2
+    environment:
+      POSTGRES_DB: "survey_bot_db"
+      POSTGRES_USER: "survey_bot_user"
+      POSTGRES_PASSWORD: "L2eVC5aTUB1tzni3"
+    volumes:
+      - .:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
