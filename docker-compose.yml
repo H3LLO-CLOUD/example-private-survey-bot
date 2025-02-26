@@ -1,29 +1,7 @@
 services:
-  app:
-    image: ghcr.io/rieset/bot-app:main
-    build:
-      context: ./containers/app
-      dockerfile: Dockerfile
-      target: production
-    environment:
-      NEXT_PUBLIC_API_URL: http://backend:8080
-    ports:
-      - "80:3000"
-
-  backend:
-    image: ghcr.io/rieset/bot-backend:main
-    build:
-      context: ./containers/backend
-      dockerfile: Dockerfile
-      target: production
-    environment:
-      POSTGRES_URL: "jdbc:postgresql://postgres:5432/survey_bot_db"
-      POSTGRES_USER: "survey_bot_user"
-      POSTGRES_PASSWORD: "L2eVC5aTUB1tzni3"
-    ports:
-      - "8080:8080"
 
   postgres:
+    image: ghcr.io/h3llo-cloud/example-private-survey-bot-database:main
     build:
       context: ./containers/database
       dockerfile: Dockerfile
@@ -34,13 +12,42 @@ services:
       PGDATA: /var/lib/postgresql/data/data
     ports:
       - "5432:5432"
-    # Для базы данных устанавливаем хранилище
-    # на уровень ниже для обеспечения чистой директории
-    # при инициализации
     volumes:
-      - .:/var/lib/postgresql/data
+      - ./any/:/var/lib/postgresql/data
 
-x-registry:
-  "ghcr.io":
-    username: <login>
-    password: <token>
+  app:
+    image: ghcr.io/h3llo-cloud/example-private-survey-bot-app:main
+    build:
+      context: ./containers/app
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8080
+    depends_on:
+      - postgres
+    ports:
+      - "80:3000"
+
+  backend:
+    image: ghcr.io/h3llo-cloud/example-private-survey-bot-backend:main
+    build:
+      context: ./containers/backend
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      POSTGRES_URL: "jdbc:postgresql://postgres:5432/survey_bot_db"
+      POSTGRES_USER: "survey_bot_user"
+      POSTGRES_PASSWORD: "L2eVC5aTUB1tzni3"
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+
+#x-registry:
+#  "ghcr.io":
+#    username: <login>
+#    password: <token>
+
+#x-registry:
+#  "ghcr.io":
+#    auth: base64("<login>:<token>")
